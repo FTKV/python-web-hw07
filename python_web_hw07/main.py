@@ -1,5 +1,4 @@
 import asyncio
-from collections.abc import Iterable
 import os
 
 from connect_db import AsyncDBSession
