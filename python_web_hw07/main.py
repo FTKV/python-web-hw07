@@ -1,26 +1,37 @@
 import asyncio
+import datetime
 
 import prettytable
 
 from connect_db import AsyncDBSession
 from my_select import select_statement
 from window import make_window, window_update
-    
+
+
+FORMAT_DATE = "%d.%m.%Y"
+
+
+def str_(arg):
+    if isinstance(arg, datetime.datetime):
+        return arg.strftime(FORMAT_DATE)
+    else:
+        return str(arg)
+
         
 def output_table(result):
     data = result.all()
-    keys = list(result.keys())
+    keys = [""] + list(result.keys())
     table = prettytable.PrettyTable(keys)
     for key in keys:
         if key.casefold().find("list") != -1:
             table.align[key] = "l"
-    for row in data:
-        line = []
+    for i, row in enumerate(data):
+        line = [i + 1]
         for el in row:
             if isinstance(el, list):
-                line.append(", ".join(list(map(str, el))))
+                line.append(", ".join(list(map(str_, el))))
             else:
-                line.append(el)
+                line.append(str_(el))
         table.add_row(line)
     return table
 
@@ -28,27 +39,18 @@ def output_table(result):
 async def handle_db(session, aioqueue, aiocondition):
     async with session:
         while True:
-            error_flag = False
             async with aiocondition:
                 await aiocondition.wait()
                 user_input = await aioqueue.get()
-            if user_input.strip().casefold() == "exit":
+            if user_input == 0:
                 break
-            try:
-                user_input = int(user_input)
-                if not 1 <= user_input <= 12:
-                    result = "Try again"
-                    error_flag = True
-            except ValueError:
-                result = "Try again"
-                error_flag = True
-            if not error_flag:
-                stmt = select_statement(user_input)
-                result = await session.execute(stmt)
-                result = output_table(result)
+            stmt = select_statement(user_input)
+            result = await session.execute(stmt)
+            result = output_table(result)
             async with aiocondition:
                 await aioqueue.put(result)
                 aiocondition.notify()
+
 
 async def main():
     session = AsyncDBSession()

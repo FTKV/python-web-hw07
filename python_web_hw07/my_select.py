@@ -72,7 +72,7 @@ def select_04():
 def select_05():
     
     stmt = (
-                select(Lecturer.full_name, func.aggregate_strings(Course.title, ", ").label("course_titles"))
+                select(Lecturer.full_name, func.aggregate_strings(Course.title, ", ").label("course_title_list"))
                 .select_from(Lecturer)
                 .join(Course)
                 .group_by(Lecturer.id)
@@ -123,7 +123,7 @@ def select_08():
 def select_09():
 
     stmt = (
-                select(Student.full_name, func.aggregate_strings(distinct(Course.title), ", ").label("course_titles"))
+                select(Student.full_name, func.aggregate_strings(distinct(Course.title), ", ").label("course_title_list"))
                 .select_from(Grade)
                 .join(Student)
                 .join(Course)
@@ -136,7 +136,7 @@ def select_09():
 def select_10():
 
     stmt = (
-                select(Lecturer.full_name, Student.full_name, func.aggregate_strings(distinct(Course.title), ", ").label("course_titles"))
+                select(Lecturer.full_name, Student.full_name, func.aggregate_strings(distinct(Course.title), ", ").label("course_title_list"))
                 .select_from(Grade)
                 .join(Student)
                 .join(Course)

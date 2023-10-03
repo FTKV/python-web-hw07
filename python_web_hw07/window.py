@@ -45,14 +45,27 @@ class ConsoleText(tk.Text):
             return
         else:
             self.is_run_enter_handler = True
+        error_flag = False
         user_input = self.get('input', 'end')
         if event != "first":
-            async with self.aiocondition:
-                await self.aioqueue.put(user_input)
-                self.aiocondition.notify()
-            async with self.aiocondition:
-                await self.aiocondition.wait()
-            result = await self.aioqueue.get()
+            if user_input.strip().casefold() == "exit":
+                user_input = 0
+            else:
+                try:
+                    user_input = int(user_input)
+                    if not 1 <= user_input <= 12:
+                        result = "Try again"
+                        error_flag = True
+                except ValueError:
+                    result = "Try again"
+                    error_flag = True
+            if not error_flag:
+                async with self.aiocondition:
+                    await self.aioqueue.put(user_input)
+                    self.aiocondition.notify()
+                async with self.aiocondition:
+                    await self.aiocondition.wait()
+                result = await self.aioqueue.get()
             self.insert('end', f'{result}\n\n')
         self.insert('end', "Enter the number of query from 1 to 12 or 'exit': ")
         # move input mark
