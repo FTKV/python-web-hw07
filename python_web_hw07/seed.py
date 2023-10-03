@@ -18,22 +18,22 @@ APPROX_NUMBER_GRADES = 1000
 COURSES = set(["Фізика", "Математика", "Українська мова", "Англійська мова", "Історія України", "Всесвітня історія", "Українська література", "Хімія"])
 
 
-FAKER = faker.Faker("uk_UA")
+fake_data = faker.Faker("uk_UA")
 
 
 async def get_fake_group():
     for _ in range(NUMBER_GROUPS):
-        yield f"{''.join([choice(string.ascii_uppercase) for i in range(3)])}-{''.join(choice(string.digits) for i in range(3))}"
+        yield f"{''.join([choice(string.ascii_uppercase) for _ in range(3)])}-{''.join(choice(string.digits) for _ in range(3))}"
 
 
 async def get_fake_student():
     for _ in range(NUMBER_STUDENTS):
-        yield (lambda x: (x[1], x[2], randint(1, NUMBER_GROUPS)) if len(x) == 3 else (x[0], x[1], randint(1, NUMBER_GROUPS)))(FAKER.name().split(" "))
+        yield (lambda x: (x[1], x[2], randint(1, NUMBER_GROUPS)) if len(x) == 3 else (x[0], x[1], randint(1, NUMBER_GROUPS)))(fake_data.name().split(" "))
 
 
 async def get_fake_lecturer():
     for _ in range(NUMBER_LECTURERS):
-        yield (lambda x: (x[1], x[2]) if len(x) == 3 else (x[0], x[1]))(FAKER.name().split(" "))
+        yield (lambda x: (x[1], x[2]) if len(x) == 3 else (x[0], x[1]))(fake_data.name().split(" "))
 
 
 async def get_fake_course():

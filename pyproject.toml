@@ -12,6 +12,8 @@ sqlalchemy = "^2.0.21"
 faker = "^19.6.2"
 asyncpg = "^0.28.0"
 psycopg2 = "^2.9.8"
+async-tkinter-loop = "^0.9.1"
+prettytable = "^3.9.0"
 
 
 [build-system]

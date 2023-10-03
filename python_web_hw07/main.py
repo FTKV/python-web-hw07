@@ -1,44 +1,19 @@
 import asyncio
-import os
+
+import prettytable
 
 from connect_db import AsyncDBSession
 from my_select import select_statement
+from window import make_window, window_update
     
         
-def print_sql(result):
+def output_table(result):
     data = result.all()
     keys = list(result.keys())
-
-    widths = []
-    columns = []
-    tavnit = '|'
-    separator = '+'
-
-    try:
-        terminal_width = int(str(os.get_terminal_size()).split(",")[0].split("columns=")[1])
-    except ValueError:
-        terminal_width = 150
-    end_of_width = 1
-    for index, cd in enumerate(keys):
-        end_of_width += 3
-        if end_of_width >= terminal_width:
-            break
-        max_col_length = max(list(map(lambda x: len(str(x[index])), data)))
-        max_col_length = max(max_col_length, len(cd))
-        if end_of_width + max_col_length > terminal_width:
-            max_col_length = terminal_width - end_of_width
-        end_of_width += max_col_length
-        widths.append(max_col_length)
-        columns.append(cd)
-
-    for w in widths:
-        #tavnit += " %-"+"%ss |" % (w,)
-        tavnit += " %-"+"%s.%ss |" % (w,w)
-        separator += '-'*w + '--+'
-
-    print(separator)
-    print(tavnit % tuple(columns))
-    print(separator)
+    table = prettytable.PrettyTable(keys)
+    for key in keys:
+        if key.casefold().find("list") != -1:
+            table.align[key] = "l"
     for row in data:
         line = []
         for el in row:
@@ -46,28 +21,45 @@ def print_sql(result):
                 line.append(", ".join(list(map(str, el))))
             else:
                 line.append(el)
-        print(tavnit % tuple(line))
-    print(separator)
+        table.add_row(line)
+    return table
 
 
-async def main():
-    async with AsyncDBSession() as session:
+async def handle_db(session, aioqueue, aiocondition):
+    async with session:
         while True:
-            user_input = input("Enter the number of query from 1 to 12 or 'exit': ")
+            error_flag = False
+            async with aiocondition:
+                await aiocondition.wait()
+                user_input = await aioqueue.get()
             if user_input.strip().casefold() == "exit":
-                exit(0)
+                break
             try:
                 user_input = int(user_input)
+                if not 1 <= user_input <= 12:
+                    result = "Try again"
+                    error_flag = True
             except ValueError:
-                print("Try again")
-                continue
-            if not 1 <= user_input <= 12:
-                print("Try again")
-                continue
+                result = "Try again"
+                error_flag = True
+            if not error_flag:
+                stmt = select_statement(user_input)
+                result = await session.execute(stmt)
+                result = output_table(result)
+            async with aiocondition:
+                await aioqueue.put(result)
+                aiocondition.notify()
 
-            stmt = select_statement(user_input)
-            result = await session.execute(stmt)
-            print_sql(result)
+async def main():
+    session = AsyncDBSession()
+    aioqueue = asyncio.Queue(maxsize=1)
+    aiocondition = asyncio.Condition()
+    root = make_window(aioqueue, aiocondition)
+    window_task = asyncio.create_task(window_update(root))
+    db_task = asyncio.create_task(handle_db(session, aioqueue, aiocondition))
+    tasks = await asyncio.wait([window_task, db_task], return_when=asyncio.FIRST_COMPLETED)
+    [task.cancel() for task in tasks[1]]
+    await session.close()
     
     
 if __name__ == "__main__":
