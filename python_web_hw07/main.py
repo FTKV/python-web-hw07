@@ -22,7 +22,8 @@ def output_table(result):
     data = result.all()
     keys = [""] + list(result.keys())
     table = prettytable.PrettyTable(keys)
-    for key in keys:
+    table.align[keys[0]] = "r"
+    for key in keys[1:]:
         if key.casefold().find("list") != -1:
             table.align[key] = "l"
     for i, row in enumerate(data):

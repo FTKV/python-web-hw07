@@ -6,7 +6,7 @@ from models import Course, Grade, Group, Lecturer, Student
 def select_01():
     
     stmt = (
-                select(Student.full_name, func.round(func.avg(Grade.grade), 2).label("average_grade"))
+                select(Student.full_name.label("student_full_name"), func.round(func.avg(Grade.grade), 2).label("average_grade"))
                 .select_from(Grade)
                 .join(Student)
                 .group_by(Student.id)
@@ -36,10 +36,10 @@ def select_02():
             )
             
     stmt = (
-                select(average_grades.c.full_name, average_grades.c.title, average_grades.c.average_grade)
+                select(average_grades.c.full_name.label("student_full_name"), average_grades.c.title.label("group_title"), average_grades.c.average_grade.label("average_grade"))
                 .select_from(average_grades)
                 .join(max_average_grades, and_(max_average_grades.c.title == average_grades.c.title, max_average_grades.c.max_average_grade == average_grades.c.average_grade))
-                .order_by(average_grades.c.title, average_grades.c.average_grade)
+                .order_by(average_grades.c.average_grade, average_grades.c.title)
             )
     
     return stmt
@@ -54,6 +54,7 @@ def select_03():
                 .join(Course)
                 .join(Group)
                 .group_by(Group.id, Course.id)
+                .order_by(Group.title)
             )
     
     return stmt
@@ -72,10 +73,11 @@ def select_04():
 def select_05():
     
     stmt = (
-                select(Lecturer.full_name, func.aggregate_strings(Course.title, ", ").label("course_title_list"))
+                select(Lecturer.full_name.label("lecturer_full_name"), func.aggregate_strings(Course.title, ", ").label("course_title_list"))
                 .select_from(Lecturer)
                 .join(Course)
                 .group_by(Lecturer.id)
+                .order_by(Lecturer.last_name)
             )
     
     return stmt
@@ -84,10 +86,10 @@ def select_05():
 def select_06():
 
     stmt = (
-                select(Group.title, Student.full_name)
+                select(Group.title.label("group_title"), Student.full_name.label("student_full_name"))
                 .select_from(Group)
                 .join(Student)
-                .order_by(Group.title, Student.full_name)
+                .order_by(Group.title, Student.last_name)
             )
     
     return stmt
@@ -102,6 +104,7 @@ def select_07():
                 .join(Course)
                 .join(Group)
                 .group_by(Group.id, Course.id)
+                .order_by(Group.title, Course.title)
             )
     
     return stmt
@@ -110,11 +113,12 @@ def select_07():
 def select_08():
 
     stmt = (
-                select(Lecturer.full_name, func.round(func.avg(Grade.grade), 2).label("average_grade"))
+                select(Lecturer.full_name.label("lecturer_full_name"), func.round(func.avg(Grade.grade), 2).label("average_grade"))
                 .select_from(Grade)
                 .join(Course)
                 .join(Lecturer)
                 .group_by(Lecturer.id)
+                .order_by(Lecturer.last_name)
             )
     
     return stmt
@@ -123,11 +127,12 @@ def select_08():
 def select_09():
 
     stmt = (
-                select(Student.full_name, func.aggregate_strings(distinct(Course.title), ", ").label("course_title_list"))
+                select(Student.full_name.label("student_full_name"), func.aggregate_strings(distinct(Course.title), ", ").label("course_title_list"))
                 .select_from(Grade)
                 .join(Student)
                 .join(Course)
                 .group_by(Student.id)
+                .order_by(Student.last_name)
             )
     
     return stmt
@@ -136,7 +141,7 @@ def select_09():
 def select_10():
 
     stmt = (
-                select(Lecturer.full_name, Student.full_name, func.aggregate_strings(distinct(Course.title), ", ").label("course_title_list"))
+                select(Lecturer.full_name.label("lecturer_full_name"), Student.full_name.label("student_full_name"), func.aggregate_strings(distinct(Course.title), ", ").label("course_title_list"))
                 .select_from(Grade)
                 .join(Student)
                 .join(Course)
@@ -151,7 +156,7 @@ def select_10():
 def select_11():
 
     stmt = (
-                select(Lecturer.full_name, Student.full_name, func.round(func.avg(Grade.grade), 2).label("average_grade"))
+                select(Lecturer.full_name.label("lecturer_full_name"), Student.full_name.label("student_full_name"), func.round(func.avg(Grade.grade), 2).label("average_grade"))
                 .select_from(Grade)
                 .join(Student)
                 .join(Course)
