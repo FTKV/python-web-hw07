@@ -54,8 +54,7 @@ class ConsoleText(tk.Text):
                 try:
                     user_input = int(user_input)
                     if not 1 <= user_input <= 12:
-                        result = "Try again"
-                        error_flag = True
+                        raise ValueError
                 except ValueError:
                     result = "Try again"
                     error_flag = True
