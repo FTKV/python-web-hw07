@@ -39,10 +39,10 @@ async def handle_db(session, aioqueue, aiocondition):
         while True:
             async with aiocondition:
                 await aiocondition.wait()
-                user_input = await aioqueue.get()
-            if user_input == 0:
+                num = await aioqueue.get()
+            if num == 0:
                 break
-            stmt = select_statement(user_input)
+            stmt = select_statement(num)
             result = await session.execute(stmt)
             result = output_table(result)
             async with aiocondition:
