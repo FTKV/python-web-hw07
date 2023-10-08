@@ -40,7 +40,7 @@ async def handle_db(session, aioqueue, aiocondition):
             async with aiocondition:
                 await aiocondition.wait()
                 num = await aioqueue.get()
-            if num == 0:
+            if not num:
                 break
             stmt = select_statement(num)
             result = await session.execute(stmt)

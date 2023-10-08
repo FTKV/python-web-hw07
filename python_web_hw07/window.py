@@ -49,7 +49,7 @@ class ConsoleText(tk.Text):
         user_input = self.get('input', 'end')
         if event != "first":
             if user_input.strip().casefold() == "exit":
-                user_input = 0
+                user_input = None
             else:
                 try:
                     user_input = int(user_input)
