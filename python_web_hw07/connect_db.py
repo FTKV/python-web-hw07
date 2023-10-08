@@ -6,12 +6,15 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, AsyncEngin
 config = configparser.ConfigParser()
 config.read("config.ini")
 
-username = config.get('DB', 'user')
+driver_sync = config.get('DB', 'driver_sync')
+driver_async = config.get('DB', 'driver_async')
+user = config.get('DB', 'user')
 password = config.get('DB', 'password')
-db_name = config.get('DB', 'db_name')
-domain = config.get('DB', 'domain')
+host = config.get('DB', 'host')
+port = config.get('DB', 'port')
+dbname = config.get('DB', 'dbname')
 
-URL = f'postgresql+asyncpg://{username}:{password}@{domain}:5432/{db_name}'
+url = f"{driver_sync}://{user}:{password}@{host}:{port}/{dbname}"
 
-engine: AsyncEngine = create_async_engine(URL, echo=False)
+engine: AsyncEngine = create_async_engine(f"{driver_sync}+{driver_async}://{user}:{password}@{host}:{port}/{dbname}", echo=False)
 AsyncDBSession = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)

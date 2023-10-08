@@ -53,7 +53,7 @@ class Course(Base):
 class Grade(Base):
     __tablename__ = 'grades'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    created_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    lesson_date: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     grade: Mapped[int] = mapped_column(Integer, CheckConstraint("grade >= 1 and grade <= 100"), nullable=True)
     student_id: Mapped[int] = mapped_column('student_id', Integer, ForeignKey('students.id', ondelete="CASCADE", onupdate="CASCADE"))
     course_id: Mapped[int] = mapped_column('course_id', Integer, ForeignKey('courses.id', ondelete="CASCADE", onupdate="CASCADE"))

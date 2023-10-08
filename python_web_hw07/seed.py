@@ -45,15 +45,15 @@ async def get_fake_course():
 
 async def get_fake_grade():
     n = 0
-    created_date = date(2022, 9, 1)
+    lesson_date = date(2022, 9, 1)
     while n < APPROX_NUMBER_GRADES:
-        created_date += timedelta(days=randint(0, 3))
+        lesson_date += timedelta(days=randint(0, 3))
         course_id = randint(1, NUMBER_COURSES)
         number_of_students = randint(floor(0.8*NUMBER_STUDENTS), NUMBER_STUDENTS)
         n += number_of_students
         student_ids = sample(range(1, NUMBER_STUDENTS+1), k=number_of_students)
         for student_id in student_ids:
-            yield (created_date, randint(1, 100), student_id, course_id)
+            yield (lesson_date, randint(1, 100), student_id, course_id)
 
 
 async def insert_data_to_db() -> None:
@@ -76,8 +76,8 @@ async def insert_data_to_db() -> None:
             course = Course(title=title, lecturer_id=lecturer_id)
             session.add(course)
 
-        async for created_date, grade, student_id, course_id in get_fake_grade():
-            grade = Grade(created_date=created_date, grade=grade, student_id=student_id, course_id=course_id)
+        async for lesson_date, grade, student_id, course_id in get_fake_grade():
+            grade = Grade(lesson_date=lesson_date, grade=grade, student_id=student_id, course_id=course_id)
             session.add(grade)
 
         await session.commit()

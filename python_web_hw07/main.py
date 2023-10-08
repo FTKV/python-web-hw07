@@ -8,12 +8,9 @@ from my_select import select_statement
 from window import make_window, window_update
 
 
-FORMAT_DATE = "%d.%m.%Y"
-
-
 def str_(arg):
     if isinstance(arg, datetime.datetime):
-        return arg.strftime(FORMAT_DATE)
+        return arg.date().isoformat()
     else:
         return str(arg)
 

@@ -39,7 +39,7 @@ def select_02():
                 select(average_grades.c.full_name.label("student_full_name"), average_grades.c.title.label("group_title"), average_grades.c.average_grade.label("average_grade"))
                 .select_from(average_grades)
                 .join(max_average_grades, and_(max_average_grades.c.title == average_grades.c.title, max_average_grades.c.max_average_grade == average_grades.c.average_grade))
-                .order_by(average_grades.c.average_grade, average_grades.c.title)
+                .order_by(desc(average_grades.c.average_grade), average_grades.c.title)
             )
     
     return stmt
@@ -171,20 +171,20 @@ def select_11():
 def select_12():
 
     last_lessons_dates = (
-                select(Grade.course_id, func.max(Grade.created_date).label("max_created_date"))
+                select(Grade.course_id, func.max(Grade.lesson_date).label("max_lesson_date"))
                 .select_from(Grade)
                 .group_by(Grade.course_id)
                 .subquery()
             )
             
     stmt = (
-                select(Group.title.label("group_title"), Course.title.label("course_title"), last_lessons_dates.c.max_created_date, func.array_agg(Grade.grade).label("grade_list"))
+                select(Group.title.label("group_title"), Course.title.label("course_title"), last_lessons_dates.c.max_lesson_date, func.array_agg(Grade.grade).label("grade_list"))
                 .select_from(last_lessons_dates)
-                .join(Grade, and_(Grade.course_id == last_lessons_dates.c.course_id, Grade.created_date == last_lessons_dates.c.max_created_date))
+                .join(Grade, and_(Grade.course_id == last_lessons_dates.c.course_id, Grade.lesson_date == last_lessons_dates.c.max_lesson_date))
                 .join(Student)
                 .join(Course)
                 .join(Group)
-                .group_by(Group.id, Course.id, last_lessons_dates.c.max_created_date)
+                .group_by(Group.id, Course.id, last_lessons_dates.c.max_lesson_date)
                 .order_by(Group.title, Course.title)
             )
     
